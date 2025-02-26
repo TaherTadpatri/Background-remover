@@ -1,4 +1,3 @@
-import onnx
 import torch 
 import cv2
 import numpy as np
@@ -8,6 +7,7 @@ from PIL import Image
 from skimage import io
 
 def normPRED(d):
+    d=torch.from_numpy(d)
     ma = torch.max(d)
     mi = torch.min(d)
 
@@ -32,7 +32,7 @@ def save_output(image_name,pred,d_dir):
     imidx = bbb[0]
     for i in range(1,len(bbb)):
         imidx = imidx + "." + bbb[i]
-
+    print(d_dir+imidx)
     imo.save(d_dir+imidx+'.png')
 
 def preprocess_input(image_path, target_size=(320, 320)):
@@ -46,7 +46,7 @@ def preprocess_input(image_path, target_size=(320, 320)):
 def main():
 
     prediction_dir = os.path.join(os.getcwd())
-    sess = ort.InferenceSession('u2net.quant.onnx').to_device('cuda')  
+    sess = ort.InferenceSession('u2net.quant.onnx') 
     input_name = sess.get_inputs()[0].name
     #model=onnx.load('u2net.quant.onnx')
     input_image = preprocess_input("1.jpg")
@@ -55,10 +55,11 @@ def main():
     d1,d2,d3,d4,d5,d6,d7=output
     
     pred = d1[:,0,:,:]
+    print(pred.shape,type(pred.shape))
     pred = normPRED(pred)    
     if not os.path.exists(prediction_dir):
         os.makedirs(prediction_dir, exist_ok=True)
-    save_output("1.jpg",pred,prediction_dir)
+    save_output("1.png",pred,prediction_dir)
 
 
 
